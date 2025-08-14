@@ -9,12 +9,14 @@ from wyciąg import Wyciąg
 from wyciąg import Transakcja
 from typing import List
 from transakcje_extraction_from_pdf import extract_transakcje_from_pdf
+from transakcje_manager import TransakcjeManager
+from wspolnoty_manager import WspolnotyManager
 
 class DashedBorderLabel(QLabel):
     def __init__(self):
         super().__init__()
         self.setAlignment(Qt.AlignCenter)
-        self.setText('\n\n Przeciągnij pliki <b>.xml</b> tutaj \n\n')
+        self.setText('\n\n Przeciągnij pliki <b>.xml</b> i <b>.pdf</b> tutaj \n\n')
         self.setFont(QFont("Arial", 15))
         self.setStyleSheet('''
             QLabel{
@@ -23,11 +25,12 @@ class DashedBorderLabel(QLabel):
         ''')
 
 class DnDFiles(QWidget):
-    def __init__(self, parent, wspolnoty_manager):
-        super().__init__(parent=parent)
+    def __init__(self, wspolnoty_manager: WspolnotyManager, transakcje_manager : TransakcjeManager):
+        super().__init__()
         self.resize(400, 100)
         self.setAcceptDrops(True)
         self.wspolnoty_manager = wspolnoty_manager
+        self.transakcje_manager = transakcje_manager
 
         mainLayout = QVBoxLayout()
 
@@ -67,19 +70,26 @@ class DnDFiles(QWidget):
 
     def dropEvent(self, event):
         if event.mimeData().hasUrls():
+            self.transakcje = []
+            self.wyciągi = []
             event.setDropAction(Qt.CopyAction)
             for url in event.mimeData().urls():
                 file_path = url.toLocalFile()
-                print(file_path)
-                if file_path[-4:] == '.xml':
-                    if not url in self.urls:
-                        self.urls.append(url)
-                    self.wyciągi.append(Wyciąg(file_path, self.wspolnoty_manager))
-                    self.transakcje.extend(self.wyciągi[-1].transakcje)
-                elif file_path[-4:] == '.pdf':
-                    transakcje_list = extract_transakcje_from_pdf(file_path, self.wspolnoty_manager)
-                    self.transakcje.extend(transakcje_list)
+                try:
+                    if file_path[-4:] == '.xml':
+                        if not url in self.urls:
+                            self.urls.append(url)
+                        self.wyciągi.append(Wyciąg(file_path, self.wspolnoty_manager))
+                        self.transakcje.extend(self.wyciągi[-1].transakcje)
+                    elif file_path[-4:] == '.pdf':
+                        transakcje_list = extract_transakcje_from_pdf(file_path, self.wspolnoty_manager)
+                        self.transakcje.extend(transakcje_list)
+                    print(file_path + " działa")
+                except Exception as e:
+                    print(file_path + " nie udało się wszytać")
+
             event.accept()
+            self.transakcje_manager.dodaj_transakcje(self.transakcje)
             for f in self.on_drop_files_events:
                 f()
         else:

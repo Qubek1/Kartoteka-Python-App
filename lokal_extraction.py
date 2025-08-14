@@ -1,4 +1,4 @@
-possible_prefixes = [" lokal", " lokal nr", " lokal nr.", " mieszkanie", " mieszkania", " m.", " m", "/", "\\"]
+possible_prefixes = [" lokal", " lokal nr", " lok.", " lokal nr.", " mieszkanie", " mieszkania", " m.", " m"]
 
 def extract_lokal_from_text(text:str) -> int:
     for prefix in possible_prefixes:

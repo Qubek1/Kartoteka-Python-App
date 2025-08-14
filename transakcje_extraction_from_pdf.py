@@ -42,6 +42,9 @@ def extract_transakcje_from_pdf(file_name: Path, wspolnoty_manager : WspolnotyMa
             for numer_konta in wspolnoty_manager.numery_kont_bankowych.keys():
                 if current_text.find(numer_konta) != -1:
                     dictionary["numer konta"] = numer_konta
+                    if dictionary["lokal"] == -1:
+                        dictionary["wspolnota"], dictionary["lokal"] = wspolnoty_manager.numery_kont_bankowych[numer_konta]
+                    break
             # print(current_text)
             # print("")
             # for key, value in dictionary.items():

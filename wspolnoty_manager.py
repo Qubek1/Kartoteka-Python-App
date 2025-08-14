@@ -50,11 +50,7 @@ class WspolnotyManager:
             with open("wspolnoty.json", "r") as file:
                 array = json.load(file)
                 for item in array:
-                    wspolnota = Wspolnota(json_dict=item)
-                    wspolnota.on_add_numer_konta.append(self.add_numer_konta_bankowego)
-                    self.wspolnoty.append(wspolnota)
-                    for lokal, numer_konta in wspolnota.numery_kont_bankowych.items():
-                        self.numery_kont_bankowych[numer_konta] = (wspolnota, lokal)
+                    self.dodaj_wspolnote(Wspolnota(json_dict=item), False)
         except FileNotFoundError:
             return
         except Exception as e:
@@ -67,11 +63,15 @@ class WspolnotyManager:
                 array.append(wspolnota.create_json_dict())
             json.dump(array, file)
 
-    def dodaj_wspolnote(self, wspolnota : Wspolnota):
+    def dodaj_wspolnote(self, wspolnota : Wspolnota, save = True):
+        wspolnota.on_add_numer_konta.append(self.add_numer_konta_bankowego)
         self.wspolnoty.append(wspolnota)
-        self.save_wspolnoty()
-        for f in self.on_list_change_events:
-            f()
+        for lokal, numer_konta in wspolnota.numery_kont_bankowych.items():
+            self.numery_kont_bankowych[numer_konta] = (wspolnota, lokal)
+        if save:
+            self.save_wspolnoty()
+            for f in self.on_list_change_events:
+                f()
     
     def usun_wspolnote(self, wspolnota : Wspolnota):
         self.wspolnoty.remove(wspolnota)
@@ -89,3 +89,5 @@ class WspolnotyManager:
     def add_numer_konta_bankowego(self, wspolnota: Wspolnota, lokal: int, numer_konta: str):
         self.numery_kont_bankowych[numer_konta] = (wspolnota, lokal)
         self.save_wspolnoty()
+
+wspolnoty_manager_singleton = WspolnotyManager()

@@ -53,7 +53,7 @@ class Transakcja:
             self.ustrd_text : str = search(tree_node, "Ustrd")[0].text
             if self.ustrd_text is None:
                 self.ustrd_text = ""
-            self.text : str = self.nm_text + "\n" + self.ustrd_text
+            self.text : str = self.ustrd_text #self.nm_text + "\n" + self.ustrd_text
             self.przychodzące : bool = (find(tree_node, "CdtDbtInd").text == "CRDT")
             self.id : str = search(tree_node, "InstrId")[0].text
             print(self.id)
@@ -65,6 +65,7 @@ class Transakcja:
             self.wspolnota : Wspolnota = wspolnoty_manager.find_wspolnota_in_text(self.text)
             self.poprawne : bool = False
             self.odrzucone : bool = False
+            self.zatwierdzone : bool = False
             self.numer_konta : str = ""
             try:
                 self.numer_konta = search(tree_node, "DbtrAcct")[0][0][0].text
@@ -77,17 +78,32 @@ class Transakcja:
             self.text = dictionary["text"]
             self.przychodzące = dictionary["przychodzące"]
             self.lokal = dictionary["lokal"]
+            if self.lokal <= 0:
+                self.lokal = extract_lokal_from_text(self.text)
             self.poprawne = dictionary["poprawne"]
             self.wspolnota = wspolnoty_manager.wspolnota_by_name(dictionary["wspolnota"])
+            if self.wspolnota is None:
+                self.wspolnota = wspolnoty_manager.find_wspolnota_in_text(self.text)
             self.odrzucone = dictionary["odrzucone"]
+            self.zatwierdzone = False
+            if "zatwierdzone" in dictionary.keys():
+                self.zatwierdzone = dictionary["zatwierdzone"]
+            else:
+                self.zatwierdzone = self.poprawne and (not self.odrzucone)
             self.year = dictionary["year"]
             self.month = dictionary["month"]
             self.day = dictionary["day"]
             self.numer_konta = dictionary["numer konta"]
-        if self.przychodzące and ((self.wspolnota is None) or self.lokal == -1):
-            if self.numer_konta in wspolnoty_manager.numery_kont_bankowych.keys():
+            if self.numer_konta == "":
+                for numer_konta in wspolnoty_manager.numery_kont_bankowych.keys():
+                    if self.text.find(numer_konta) != -1:
+                        self.numer_konta = numer_konta
+                        break
+        if not self.przychodzące and not self.odrzucone :
+            # ustalanie lokalu na podstawie numeru konta bankowego
+            if (self.wspolnota is None or self.lokal <= 0) and self.numer_konta in wspolnoty_manager.numery_kont_bankowych.keys():
                 self.wspolnota, self.lokal = wspolnoty_manager.numery_kont_bankowych[self.numer_konta]
-        
+
     def create_dict_for_json(self) -> dict:
         dictionary = {}
         dictionary["id"] = self.id
@@ -105,6 +121,7 @@ class Transakcja:
         dictionary["month"] = self.month
         dictionary["day"] = self.day
         dictionary["numer konta"] = self.numer_konta
+        dictionary["zatwierdzone"] = self.zatwierdzone
         return dictionary
 
 
