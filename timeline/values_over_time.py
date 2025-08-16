@@ -6,20 +6,28 @@ class ValuesOverTime:
         self.changes: dict[MonthDate, float] = dict()
         self.values: dict[MonthDate, float] = dict()
         self.sums: dict[MonthDate, float] = dict()
+        self.not_calculated_changes = False
     
     def add_change(self, date:MonthDate, value:float) -> None:
         self.changes[date] = value
+        self.not_calculated_changes = True
 
     def remove_change(self, date:MonthDate) -> None:
         self.changes.pop(date)
+        self.not_calculated_changes = True
 
-    def get_value_after_calculations(self, date:MonthDate) -> float:
+    def get_value(self, date:MonthDate) -> float:
+        if self.not_calculated_changes:
+            self.calculate_values(date=date)
         return self.values[date]
 
-    def get_sum_after_calculations(self, date:MonthDate) -> float:
+    def get_sum(self, date:MonthDate) -> float:
+        if self.not_calculated_changes:
+            self.calculate_values(date=date)
         return self.sums[date]
 
     def calculate_values(self, date=MonthDate.today()) -> None:
+        self.not_calculated_changes = False
         value = 0
         current_sum = 0
         for year in range(first_year(), date.year+1):

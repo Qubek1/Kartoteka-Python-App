@@ -14,10 +14,9 @@ from PyQt5.QtWidgets import QTableWidgetItem
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtWidgets import QPushButton
 
-class AbstractUpdateable():
+class AbstractUpdateable:
     def update(self):
         pass
-
 
 class AbstractColumn:
     header:str
@@ -45,7 +44,7 @@ class ColumnValuesSum(AbstractColumn):
 
     def get_str(self, date:MonthDate) -> str:
         if date in self.values.sums.keys():
-            return float_to_str(self.values.get_sum_after_calculations(date), self.precision)
+            return float_to_str(self.values.get_sum(date), self.precision)
         return ""
     
 
@@ -64,16 +63,16 @@ class ColumnValues(AbstractColumn):
 
     def get_str(self, date):
         if date in self.values.values.keys():
-            return float_to_str(self.values.get_value_after_calculations(date), self.precision)
+            return float_to_str(self.values.get_value(date), self.precision)
         return ""
     
     def create_widget(self, date):
         new_widget = None
         if date in self.values.values.keys():
             if self.integer_values:
-                new_widget = IntInputField(self.values.get_value_after_calculations(date))
+                new_widget = IntInputField(self.values.get_value(date))
             else:
-                new_widget = FloatInputField(self.values.get_value_after_calculations(date))
+                new_widget = FloatInputField(self.values.get_value(date))
                 new_widget.precision = self.precision
             new_widget.subscribe(lambda new_value: self._on_edit(date, new_value))
         return new_widget
@@ -99,7 +98,7 @@ class ColumnValuesChange(AbstractColumn):
 
     def get_str(self, date):
         if date in self.values.changes.keys():
-            return float_to_str(self.values.get_value_after_calculations(date), self.precision)
+            return float_to_str(self.values.get_value(date), self.precision)
         return ""
 
     def create_widget(self, date):
@@ -107,7 +106,7 @@ class ColumnValuesChange(AbstractColumn):
         if date in self.values.values.keys():
             input_field_value = None
             if date in self.values.changes.keys():
-                input_field_value = self.values.get_value_after_calculations(date)
+                input_field_value = self.values.get_value(date)
             if self.integer_values:
                 new_widget = IntInputField(input_field_value, accept_None_value=True)
             else:
