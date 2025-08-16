@@ -32,6 +32,7 @@ def first_year():
     return _FIRST_YEAR
 
 def set_first_year(new_first_year:int):
+    global _FIRST_YEAR
     _FIRST_YEAR = new_first_year
 
 def months_in_year(year:int):
