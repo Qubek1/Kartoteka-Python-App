@@ -3,7 +3,6 @@ from PyQt5.QtCore import QTimer
 import PyQt5.QtCore as QtCore
 from PyQt5.QtGui import QKeyEvent
 from itertools import product
-from pynput import keyboard
 from typing import Callable
 
 app = QtWidgets.QApplication([])
@@ -48,7 +47,6 @@ class QBetterLineEdit(QtWidgets.QLineEdit):
         QTimer.singleShot(0, self.clearFocus)
 
 class QComboBoxSearcheable(QtWidgets.QComboBox):
-    listener:keyboard.Listener = None
     current_search = ""
     popup_opened = False
     unfiltered_items:list[str] = []
@@ -81,6 +79,7 @@ class QComboBoxSearcheable(QtWidgets.QComboBox):
             self.last_selection = self.current_selection
             self.current_search = ""
             self.better_line_edit.grabKeyboard()
+            #self.better_line_edit.grabMouse()
         else:
             self.better_line_edit.single_shot_clear_focus()
             self.dummy_keyboard_grabber_widget.grabKeyboard()
@@ -110,8 +109,16 @@ class QComboBoxSearcheable(QtWidgets.QComboBox):
 
     def _on_text_edited(self):
         self.current_search = self.better_line_edit.text()
+        #selection_start = self.better_line_edit.selectionStart()
+        #selection_end = self.better_line_edit.selectionEnd()
+        #print(selection_start, selection_end)
         self._update_items()
         self.better_line_edit.setText(self.current_search)
+        # print(self.better_line_edit.cursor())
+        # print(self.better_line_edit.cursor().shape())
+        # print(self.better_line_edit.cursorPosition())
+        #self.better_line_edit.setSelection(selection_start, selection_end)
+        #self.better_line_edit.setSelection(1,1)
     
     def _update_items(self):
         self.clear()
