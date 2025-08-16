@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QLineEdit
 from PyQt5.QtWidgets import QComboBox
 from typing import Callable
-from pynput import keyboard
+#from pynput import keyboard
 
 class FloatInputField(QLineEdit):
     precision = 2
