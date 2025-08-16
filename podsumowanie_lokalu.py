@@ -16,20 +16,19 @@ from PyQt5.QtWidgets import QLineEdit
 from PyQt5.QtWidgets import QPushButton
 
 from wspolnoty_manager import Wspolnota
-from wspolnoty_manager import WspolnotyManager
+from wspolnoty_manager import wspolnoty_manager_singleton as wspolnoty_manager
 from wyciąg import Transakcja
-from transakcje_manager import TransakcjeManager
+from transakcje_manager import transakcje_manager_singleton as transakcje_manager
 
 from pdf_generator import PDF_Generator
 
 from generic_widgets.input_fields import FloatInputField
 
 class PodsumowanieLokalu(QWidget):
-    def __init__(self, wspolnota : Wspolnota, numer_lokalu : int, transakcje_manager : TransakcjeManager):
+    def __init__(self, wspolnota : Wspolnota, numer_lokalu : int):
         super().__init__()
         self.wspolnota = wspolnota
         self.numer_lokalu = numer_lokalu
-        self.transakcje_manager = transakcje_manager
         self.resize(1000, 700)
         
         self.years = list(range(2018, 2025 + 1))
@@ -91,13 +90,13 @@ class PodsumowanieLokalu(QWidget):
         self.numer_konta = numer_konta_text
         self.save_changes()
         self.wspolnota.add_numer_konta(self.numer_lokalu, self.numer_konta)
-        self.transakcje_manager.add_numer_bankowy(self.numer_konta)
+        transakcje_manager.add_numer_bankowy(self.numer_konta)
 
     def read_transakcje(self) -> None:
         self.wplacil_dict = dict()
         for year in self.years:
             self.wplacil_dict[year] = dict()
-        transakcje = self.transakcje_manager.get_transakcje_lokalu(self.wspolnota, self.numer_lokalu)
+        transakcje = transakcje_manager.get_transakcje_lokalu(self.wspolnota, self.numer_lokalu)
         for transakcja in transakcje:
             month = transakcja.month
             year = transakcja.year
@@ -146,9 +145,9 @@ class PodsumowanieLokalu(QWidget):
                 self.stan_na_dany_miesiac[year][month] = stan_na_dany_miesiac_value
     
     def odrzuc_transakcje(self, year: int, month: int):
-        for transakcja in self.transakcje_manager.get_transakcje_lokalu(self.wspolnota, self.numer_lokalu):
+        for transakcja in transakcje_manager.get_transakcje_lokalu(self.wspolnota, self.numer_lokalu):
             if transakcja.year == year and transakcja.month == month:
-                self.transakcje_manager.odrzuc_poprawna_transakcje(transakcja)
+                transakcje_manager.odrzuc_poprawna_transakcje(transakcja)
         self.update_everything()
 
     def update_stan_aktualny(self):
@@ -310,10 +309,8 @@ def kwota_to_str(kwota : float) -> str:
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    wspolnoty_manager = WspolnotyManager()
-    transakcje_manager = TransakcjeManager(wspolnoty_manager)
     wspolnota = wspolnoty_manager.wspolnota_by_name("Gęsickiego")
-    demo = PodsumowanieLokalu(wspolnota, 6, transakcje_manager)
+    demo = PodsumowanieLokalu(wspolnota, 6)
     #demo.update_values()
     #demo.show_current_year()
     demo.show()
