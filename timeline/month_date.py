@@ -1,12 +1,13 @@
 from datetime import date
 from dataclasses import dataclass
+from json_generics.serializable import JsonSerializable
 
 DEFAULT_FIRST_DAY = 10
 MONTHS = list(range(1, 13))
 _FIRST_YEAR = 2018
 
 @dataclass(frozen=True)
-class MonthDate:
+class MonthDate(JsonSerializable):
     month:int
     year:int
 
@@ -27,6 +28,13 @@ class MonthDate:
     def __str__(self):
         zero_prefix = "0" if self.month < 10 else ""
         return f"{zero_prefix}{self.month}.{self.year}r."
+
+    def to_json_object(self):
+        return (self.month, self.year)
+    
+    @classmethod
+    def from_json_object(cls, json_serializable):
+        return cls(json_serializable[0], json_serializable[1])
 
 def first_year():
     return _FIRST_YEAR

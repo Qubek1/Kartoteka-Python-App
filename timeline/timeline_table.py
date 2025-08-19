@@ -16,6 +16,11 @@ from PyQt5.QtWidgets import QTableWidgetItem
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtWidgets import QPushButton
 
+#Json save
+from json_generics.serializable import JsonSerializable
+
+from typing import Callable
+
 class AbstractUpdateable:
     def update(self):
         pass
@@ -160,12 +165,14 @@ class TimelineTable(AbstractUpdateable, QTableWidget):
     columns:list[AbstractColumn]
     current_year:int
     year_selection:QComboBoxSearcheable
+    on_update_event:Callable[[],None]
 
-    def __init__(self, current_year:int = MonthDate.today().year, columns:list[AbstractColumn] = []):
+    def __init__(self, current_year:int = MonthDate.today().year, columns:list[AbstractColumn] = [], on_update_event:Callable[[],None] = None):
         super().__init__()
         self.current_year = current_year
         self.columns = columns
         self.year_selection = QComboBoxSearcheable()
+        self.on_update_event = on_update_event
 
     def add_column(self, column:AbstractColumn):
         self.columns.append(column)
@@ -185,4 +192,5 @@ class TimelineTable(AbstractUpdateable, QTableWidget):
                 else:
                     print(x, y, column.get_str(date))
                     self.setItem(y, x, QTableWidgetItem(column.get_str(date)))
-        
+        if self.on_update_event is not None:
+            self.on_update_event()
