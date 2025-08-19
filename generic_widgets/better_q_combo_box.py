@@ -53,20 +53,32 @@ class QComboBoxSearcheable(QtWidgets.QComboBox):
     current_selection = ""
     last_selection = ""
 
-    def __init__(self):
+    def __init__(self, items:list[str] = [], start_item_text:str = None, start_item_index:int = None):
         super().__init__()
         self.dummy_keyboard_grabber_widget = QtWidgets.QWidget()
         better_line_edit = QBetterLineEdit()
-        better_line_edit.on_focus_in_event = self.on_lineEdit_focus_in
+        better_line_edit.on_focus_in_event = self._on_lineEdit_focus_in
         better_line_edit.on_enter_click_event = self._on_enter_press
         better_line_edit.on_esc_click_event = self._on_esc_press
         better_line_edit.textEdited.connect(self._on_text_edited)
         self.better_line_edit = better_line_edit
         self.setLineEdit(better_line_edit)
-        self.setCurrentText("abbb")
-        self.current_selection = "abbb"
+        #self.setCurrentText("abbb")
+        #self.current_selection = "abbb"
+        if items is not None:
+            self.add_items(items)
+            if start_item_text is not None:
+                self.setCurrentText(start_item_text)
+            elif start_item_index is not None:
+                self.setCurrentIndex(start_item_index)
 
-    def on_lineEdit_focus_in(self):
+    def add_item(self, item:str):
+        self.unfiltered_items.append(item)
+
+    def add_items(self, items:list[str]):
+        self.unfiltered_items.extend(items)
+
+    def _on_lineEdit_focus_in(self):
         #print(self.popup_opened)
         if not self.popup_opened:
             self.better_line_edit.single_shot_select_all()
@@ -85,12 +97,6 @@ class QComboBoxSearcheable(QtWidgets.QComboBox):
             self.dummy_keyboard_grabber_widget.grabKeyboard()
             QTimer.singleShot(0, self._commit_selection)
         self.popup_opened = not self.popup_opened
-
-    def add_item(self, item:str):
-        self.unfiltered_items.append(item)
-
-    def add_items(self, items:list[str]):
-        self.unfiltered_items.extend(items)
 
     def _on_enter_press(self):
         QTimer.singleShot(0, self.hidePopup)

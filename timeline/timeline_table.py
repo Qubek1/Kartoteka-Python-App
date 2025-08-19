@@ -8,6 +8,8 @@ from generic_widgets.input_fields import FloatInputField
 from generic_widgets.input_fields import IntInputField
 from generic_widgets.input_fields import float_to_str
 
+from generic_widgets.better_q_combo_box import QComboBoxSearcheable
+
 #PyQt Widgets
 from PyQt5.QtWidgets import QTableWidget
 from PyQt5.QtWidgets import QTableWidgetItem
@@ -39,7 +41,10 @@ class ColumnValuesSum(AbstractColumn):
         self.header = header
         self.values = values
         self.integer_values = integer_values
-        self.precision = precision
+        if integer_values:
+            self.precision = 0
+        else:
+            self.precision = precision
         self.custom_widget = False
 
     def get_str(self, date:MonthDate) -> str:
@@ -58,7 +63,10 @@ class ColumnValues(AbstractColumn):
         self.values = values
         self.table_to_update = table_to_update
         self.integer_values = integer_values
-        self.precision = precision
+        if integer_values:
+            self.precision = 0
+        else:
+            self.precision = precision
         self.custom_widget = editable
 
     def get_str(self, date):
@@ -93,7 +101,10 @@ class ColumnValuesChange(AbstractColumn):
         self.values = values
         self.table_to_update = table_to_update
         self.integer_values = integer_values
-        self.precision = precision
+        if integer_values:
+            self.precision = 0
+        else:
+            self.precision = precision
         self.custom_widget = editable
 
     def get_str(self, date):
@@ -148,11 +159,13 @@ class ColumnValuesChangesDelete(AbstractColumn):
 class TimelineTable(AbstractUpdateable, QTableWidget):
     columns:list[AbstractColumn]
     current_year:int
+    year_selection:QComboBoxSearcheable
 
     def __init__(self, current_year:int = MonthDate.today().year, columns:list[AbstractColumn] = []):
         super().__init__()
         self.current_year = current_year
         self.columns = columns
+        self.year_selection = QComboBoxSearcheable()
 
     def add_column(self, column:AbstractColumn):
         self.columns.append(column)
